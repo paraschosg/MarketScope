@@ -1,0 +1,188 @@
+/* MarketScope: the same warm, light design tokens as TerraScope. */
+.root {
+    -ms-bg: #FBFAF8;
+    -ms-surface: #FFFFFF;
+    -ms-sunken: #F6F4F0;
+    -ms-border: #E2DED6;
+    -ms-grid: #EEEBE5;
+    -ms-text: #211F1B;
+    -ms-text-secondary: #6A655D;
+    -ms-accent: #A04A2C;
+    -ms-accent-hover: #843C23;
+    -ms-up: #2F7A55;
+    -ms-up-bg: #E7F2EC;
+    -ms-down: #B5473A;
+    -ms-down-bg: #F8E6E3;
+    -ms-neutral-bg: #EEEBE5;
+    -ms-info-bg: #EAF0F3;
+    -ms-info: #36566F;
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: -ms-bg;
+    -fx-text-fill: -ms-text;
+}
+
+.label { -fx-text-fill: -ms-text; }
+
+/* Sidebar ------------------------------------------------------------------------------------ */
+.ms-sidebar {
+    -fx-background-color: -ms-sunken;
+    -fx-border-color: transparent -ms-border transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 16 12 12 12;
+}
+.ms-brand { -fx-font-size: 17px; -fx-font-weight: 600; }
+.ms-brand-mark { -fx-text-fill: -ms-accent; -fx-font-size: 17px; -fx-font-weight: 700; }
+.ms-section { -fx-font-size: 11px; -fx-font-weight: 600; -fx-text-fill: -ms-text-secondary; -fx-padding: 8 4 2 4; }
+
+.ms-watchlist {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-selection-bar: -ms-surface;
+    -fx-selection-bar-non-focused: -ms-surface;
+    -fx-selection-bar-text: -ms-text;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.ms-watchlist .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 7 8 7 8;
+    -fx-background-radius: 6;
+}
+.ms-watchlist .list-cell:hover { -fx-background-color: rgba(33, 31, 27, 0.05); }
+.ms-watchlist .list-cell:selected { -fx-background-color: -ms-surface; -fx-border-color: -ms-border; -fx-border-radius: 6; }
+.ms-watch-symbol { -fx-font-weight: 600; }
+.ms-watchlist .list-cell:filled:selected .ms-watch-symbol,
+.ms-watchlist .list-cell:filled:selected .ms-watch-price { -fx-text-fill: -ms-text; }
+.ms-watchlist .list-cell:filled:selected .ms-watch-name { -fx-text-fill: -ms-text-secondary; }
+.ms-watchlist .list-cell:filled:selected .ms-up { -fx-text-fill: -ms-up; }
+.ms-watchlist .list-cell:filled:selected .ms-down { -fx-text-fill: -ms-down; }
+.ms-watch-name { -fx-font-size: 11px; -fx-text-fill: -ms-text-secondary; }
+.ms-watch-price { -fx-font-family: "Consolas", monospace; -fx-font-size: 12px; }
+.ms-watch-change { -fx-font-family: "Consolas", monospace; -fx-font-size: 11px; }
+
+/* Header -------------------------------------------------------------------------------------- */
+.ms-header {
+    -fx-background-color: -ms-surface;
+    -fx-border-color: transparent transparent -ms-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 12 16 12 16;
+}
+.ms-asset-name { -fx-font-size: 20px; -fx-font-weight: 600; }
+.ms-asset-symbol { -fx-text-fill: -ms-text-secondary; -fx-font-size: 13px; }
+.ms-price { -fx-font-family: "Consolas", monospace; -fx-font-size: 22px; -fx-font-weight: 600; }
+.ms-change { -fx-font-family: "Consolas", monospace; -fx-font-size: 13px; }
+.ms-up { -fx-text-fill: -ms-up; }
+.ms-down { -fx-text-fill: -ms-down; }
+.ms-secondary { -fx-text-fill: -ms-text-secondary; }
+.ms-caption { -fx-font-size: 11px; -fx-text-fill: -ms-text-secondary; }
+
+.ms-toolbar { -fx-background-color: -ms-surface; -fx-padding: 6 16 8 16; -fx-border-color: transparent transparent -ms-border transparent; }
+
+/* Segmented control */
+.ms-segment { -fx-background-color: -ms-sunken; -fx-background-radius: 7; -fx-padding: 2; }
+.ms-segment .toggle-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5;
+    -fx-text-fill: -ms-text-secondary;
+    -fx-padding: 4 12 4 12;
+    -fx-cursor: hand;
+}
+.ms-segment .toggle-button:selected {
+    -fx-background-color: -ms-surface;
+    -fx-text-fill: -ms-text;
+    -fx-font-weight: 600;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 3, 0, 0, 1);
+}
+
+.button {
+    -fx-background-color: -ms-surface;
+    -fx-border-color: -ms-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: -ms-text;
+    -fx-padding: 5 12 5 12;
+    -fx-cursor: hand;
+}
+.button:hover { -fx-background-color: -ms-sunken; }
+.button.ms-primary { -fx-background-color: -ms-accent; -fx-border-color: -ms-accent; -fx-text-fill: white; }
+.button.ms-primary:hover { -fx-background-color: -ms-accent-hover; }
+
+.text-field {
+    -fx-background-color: -ms-surface;
+    -fx-border-color: -ms-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 5 8 5 8;
+}
+.text-field:focused { -fx-border-color: -ms-accent; }
+.check-box { -fx-text-fill: -ms-text-secondary; }
+
+/* Chart area ---------------------------------------------------------------------------------- */
+.ms-chart-area { -fx-background-color: -ms-surface; }
+.ms-message {
+    -fx-background-color: -ms-surface;
+    -fx-border-color: -ms-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 14 18 14 18;
+    -fx-text-fill: -ms-text-secondary;
+    -fx-wrap-text: true;
+}
+
+/* Side panel ---------------------------------------------------------------------------------- */
+.ms-side { -fx-background-color: -ms-bg; -fx-padding: 12 12 16 12; }
+.ms-side-scroll { -fx-background-color: -ms-bg; -fx-background-insets: 0; -fx-padding: 0; }
+.ms-side-scroll > .viewport { -fx-background-color: -ms-bg; }
+.ms-side-panel { -fx-border-color: transparent transparent transparent -ms-border; -fx-border-width: 0 0 0 1; }
+
+.ms-card {
+    -fx-background-color: -ms-surface;
+    -fx-border-color: -ms-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 14;
+}
+.ms-card-title { -fx-font-size: 11px; -fx-font-weight: 600; -fx-text-fill: -ms-text-secondary; }
+
+.ms-lean { -fx-font-size: 19px; -fx-font-weight: 700; }
+.ms-lean-up { -fx-text-fill: -ms-up; }
+.ms-lean-down { -fx-text-fill: -ms-down; }
+.ms-lean-mixed { -fx-text-fill: -ms-text-secondary; }
+
+.ms-factor-name { -fx-font-weight: 600; }
+.ms-factor-reading { -fx-text-fill: -ms-text-secondary; -fx-font-size: 12px; }
+.ms-arrow { -fx-font-size: 12px; -fx-font-weight: 700; }
+
+.ms-chip {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 1 7 1 7;
+    -fx-background-radius: 9;
+}
+.ms-chip-up { -fx-background-color: -ms-up-bg; -fx-text-fill: -ms-up; }
+.ms-chip-down { -fx-background-color: -ms-down-bg; -fx-text-fill: -ms-down; }
+.ms-chip-neutral { -fx-background-color: -ms-neutral-bg; -fx-text-fill: -ms-text-secondary; }
+
+.ms-table-head { -fx-font-size: 11px; -fx-font-weight: 600; -fx-text-fill: -ms-text-secondary; }
+.ms-mono { -fx-font-family: "Consolas", monospace; -fx-font-size: 12px; }
+
+.hyperlink { -fx-text-fill: -ms-text; -fx-padding: 0; -fx-border-width: 0; }
+.hyperlink:hover { -fx-text-fill: -ms-accent; -fx-underline: true; }
+.hyperlink:visited { -fx-text-fill: -ms-text-secondary; }
+
+/* Status bar ---------------------------------------------------------------------------------- */
+.ms-status {
+    -fx-background-color: -ms-sunken;
+    -fx-border-color: -ms-border transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 5 12 5 12;
+}
+.ms-status .label { -fx-font-size: 11px; -fx-text-fill: -ms-text-secondary; }
+.ms-disclaimer { -fx-font-weight: 600; }
+
+.scroll-bar { -fx-background-color: transparent; }
+.scroll-bar .thumb { -fx-background-color: rgba(33,31,27,0.18); -fx-background-radius: 4; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-padding: 0; -fx-shape: ""; }
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow { -fx-padding: 0; -fx-shape: ""; }
