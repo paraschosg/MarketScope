@@ -109,7 +109,7 @@ java -jar target/marketscope-0.1.0-all.jar
 ### Portable version (USB stick)
 
 ```powershell
-.	ools\portable.ps1
+.\tools\portable.ps1
 ```
 
 builds `target\portable\MarketScope`: `MarketScope.exe` with its own trimmed Java runtime (about
