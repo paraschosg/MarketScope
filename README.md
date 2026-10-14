@@ -106,6 +106,17 @@ tools/mvn.sh package
 java -jar target/marketscope-0.1.0-all.jar
 ```
 
+### Portable version (USB stick)
+
+```powershell
+.	ools\portable.ps1
+```
+
+builds `target\portable\MarketScope`: `MarketScope.exe` with its own trimmed Java runtime (about
+70 MB), plus a zip of it. Copy the folder onto a stick and double-click `MarketScope.exe`; nothing
+is installed and no administrator rights are needed. The watchlist and temporary files live in a
+`data` folder next to the program, so they travel with the stick.
+
 Two command-line helpers:
 
 ```bash

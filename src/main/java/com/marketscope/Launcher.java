@@ -20,6 +20,17 @@ public final class Launcher {
     }
 
     public static void main(String[] args) throws Exception {
+        // The portable build points these at a "data" folder next to the program; make sure they exist.
+        for (String property : new String[] {"java.io.tmpdir", "marketscope.home", "javafx.cachedir"}) {
+            String folder = System.getProperty(property);
+            if (folder != null) {
+                try {
+                    java.nio.file.Files.createDirectories(java.nio.file.Path.of(folder));
+                } catch (java.io.IOException | RuntimeException ignored) {
+                    // the parts that need it report their own problem
+                }
+            }
+        }
         if (args.length > 0 && args[0].equals("--report")) {
             Report.main(Arrays.copyOfRange(args, 1, args.length));
             return;
