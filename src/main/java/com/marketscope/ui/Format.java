@@ -29,6 +29,13 @@ public final class Format {
         return format.format(value);
     }
 
+    /** A difference shown with the decimals of the price it belongs to: 0.0002 for EUR/USD, 1,319.00 for BTC. */
+    public static String priceLike(double value, double reference) {
+        double a = Math.abs(reference);
+        int decimals = a >= 100 ? 2 : a >= 10 ? 3 : a >= 1 ? 4 : a >= 0.01 ? 5 : 8;
+        return new DecimalFormat("#,##0." + "0".repeat(decimals), SYMBOLS).format(value);
+    }
+
     /** "+1.62 %" or "−0.40 %". */
     public static String change(double percent) {
         return (percent >= 0 ? "+" : "−") + String.format(Locale.ROOT, "%.2f %%", Math.abs(percent));
@@ -94,6 +101,32 @@ public final class Format {
             case W1 -> "MMM yyyy";
         };
         return DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH).withZone(zone).format(time);
+    }
+
+    /** "in 2 h 05 min", "in 35 min", "now". */
+    public static String until(Instant then, Instant now) {
+        long minutes = Duration.between(now, then).toMinutes();
+        if (minutes <= 0) {
+            return "now";
+        }
+        if (minutes < 60) {
+            return "in " + minutes + " min";
+        }
+        long days = minutes / (60 * 24);
+        if (days >= 1) {
+            return "in " + days + " d " + (minutes / 60) % 24 + " h";
+        }
+        return String.format(Locale.ROOT, "in %d h %02d min", minutes / 60, minutes % 60);
+    }
+
+    /** True when {@code then} is less than {@code hours} ahead. */
+    public static boolean within(Instant then, Instant now, int hours) {
+        return Duration.between(now, then).toHours() < hours;
+    }
+
+    /** "Thu 14:30". */
+    public static String weekday(Instant time, ZoneId zone) {
+        return DateTimeFormatter.ofPattern("EEE HH:mm", Locale.ENGLISH).withZone(zone).format(time);
     }
 
     public static String clock(Instant time, ZoneId zone) {

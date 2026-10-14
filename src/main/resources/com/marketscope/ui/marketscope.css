@@ -186,3 +186,65 @@
 .scroll-bar .thumb { -fx-background-color: rgba(33,31,27,0.18); -fx-background-radius: 4; }
 .scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-padding: 0; -fx-shape: ""; }
 .scroll-bar .increment-arrow, .scroll-bar .decrement-arrow { -fx-padding: 0; -fx-shape: ""; }
+
+/* Impact chips (Forex Factory colours) and the calendar alert ------------------------------- */
+.ms-chip-high { -fx-background-color: #F23645; -fx-text-fill: white; }
+.ms-chip-medium { -fx-background-color: #FF9800; -fx-text-fill: #131722; }
+.ms-alert {
+    -fx-background-color: -ms-alert-bg;
+    -fx-border-color: -ms-alert-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+}
+.root { -ms-alert-bg: #FFF3E0; -ms-alert-border: #FFB74D; }
+
+/* Menus ------------------------------------------------------------------------------------------- */
+.menu-button {
+    -fx-background-color: -ms-surface;
+    -fx-border-color: -ms-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 2 6 2 8;
+}
+.menu-button > .label { -fx-text-fill: -ms-text; }
+.menu-button > .arrow-button > .arrow { -fx-background-color: -ms-text-secondary; }
+.context-menu { -fx-background-color: -ms-surface; -fx-border-color: -ms-border; -fx-background-radius: 6; -fx-border-radius: 6; }
+.menu-item .label { -fx-text-fill: -ms-text; }
+.menu-item:focused { -fx-background-color: -ms-sunken; }
+.menu-item:focused .label { -fx-text-fill: -ms-text; }
+.check-menu-item:checked > .left-container > .check { -fx-background-color: -ms-accent; }
+
+/* Dark theme: TradingView's dark palette ---------------------------------------------------------- */
+.root.ms-dark {
+    -ms-bg: #131722;
+    -ms-surface: #1E222D;
+    -ms-sunken: #171B26;
+    -ms-border: #2A2E39;
+    -ms-grid: #2A2E39;
+    -ms-text: #D1D4DC;
+    -ms-text-secondary: #868993;
+    -ms-accent: #E07A4F;
+    -ms-accent-hover: #F08A5F;
+    -ms-up: #22AB94;
+    -ms-up-bg: #0F2E2A;
+    -ms-down: #F7525F;
+    -ms-down-bg: #3A1A1F;
+    -ms-neutral-bg: #2A2E39;
+    -ms-alert-bg: #33261A;
+    -ms-alert-border: #8A5A1E;
+    -fx-base: #1E222D;
+    -fx-background: #131722;
+    -fx-control-inner-background: #1E222D;
+    -fx-text-base-color: #D1D4DC;
+    -fx-text-background-color: #D1D4DC;
+    -fx-mark-color: #D1D4DC;
+    -fx-focus-color: #2962FF;
+    -fx-faint-focus-color: transparent;
+}
+.root.ms-dark .ms-chip-medium { -fx-text-fill: #131722; }
+.root.ms-dark .hyperlink:visited { -fx-text-fill: #868993; }
+.root.ms-dark .combo-box, .root.ms-dark .combo-box-popup .list-view { -fx-background-color: -ms-surface; }
+.root.ms-dark .combo-box .list-cell { -fx-text-fill: -ms-text; -fx-background-color: transparent; }
+.root.ms-dark .text-field { -fx-text-fill: -ms-text; -fx-prompt-text-fill: #5D606B; }
+.root.ms-dark .scroll-bar .thumb { -fx-background-color: rgba(209,212,220,0.18); }

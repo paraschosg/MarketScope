@@ -45,6 +45,9 @@ final class Snapshot {
             Scene s = new Scene((javafx.scene.Parent) view.node(), 1440, 900);
             s.getStylesheets().add(Snapshot.class.getResource(MarketScopeApp.STYLESHEET).toExternalForm());
             view.choose(index, interval);
+            if (args.length > 3) {
+                view.setDark(args[3].equalsIgnoreCase("dark"));
+            }
             view.start();
             built.complete(view);
             scene.complete(s);

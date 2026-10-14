@@ -6,11 +6,14 @@ import com.marketscope.analysis.Levels;
 import com.marketscope.analysis.Outlook;
 import com.marketscope.analysis.Pattern;
 import com.marketscope.analysis.Sentiment;
+import com.marketscope.data.EconomicCalendar;
 import com.marketscope.data.MarketData;
+import com.marketscope.data.SettingsStore;
 import com.marketscope.data.NewsFeed;
 import com.marketscope.data.WatchlistStore;
 import com.marketscope.model.Asset;
 import com.marketscope.model.AssetKind;
+import com.marketscope.model.EconomicEvent;
 import com.marketscope.model.Interval;
 import com.marketscope.model.NewsItem;
 import javafx.animation.Animation;
@@ -25,6 +28,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Hyperlink;
@@ -96,6 +102,12 @@ public final class MainView {
     private final ToggleGroup intervals = new ToggleGroup();
     private final VBox side = new VBox(12);
     private final Timeline autoRefresh;
+    private final SettingsStore settingsStore = new SettingsStore();
+    private final SettingsStore.Settings settings;
+    private final EconomicCalendar calendar = new EconomicCalendar();
+    private final Button themeButton = new Button();
+    private final MenuButton typeButton = new MenuButton();
+    private volatile EconomicCalendar.Week week;
 
     private Asset current;
     private Interval interval = Interval.D1;
@@ -111,6 +123,12 @@ public final class MainView {
         this.host = host;
         this.store = store;
         this.watchlist = FXCollections.observableArrayList(store.load());
+        this.settings = settingsStore.load();
+        applySettings();
+        chart.setOnSettingsChanged(() -> {
+            settings.log = chart.log();
+            settingsStore.save(settings);
+        });
         root.setLeft(sidebar());
         BorderPane centre = new BorderPane();
         centre.setTop(new VBox(header(), toolbar()));
@@ -129,6 +147,10 @@ public final class MainView {
             if (current != null) {
                 load(true, true);
             }
+            EconomicCalendar.Week known = week;
+            if (known == null || known.readAt().plus(java.time.Duration.ofHours(1)).isBefore(Instant.now())) {
+                loadCalendar();
+            }
         }));
         autoRefresh.setCycleCount(Animation.INDEFINITE);
         renderEmptySide();
@@ -145,6 +167,59 @@ public final class MainView {
         }
         autoRefresh.play();
         loadQuotes(List.copyOf(watchlist));
+        loadCalendar();
+    }
+
+    /** This week's Forex Factory calendar, in the background. */
+    private void loadCalendar() {
+        work.submit(() -> {
+            EconomicCalendar.Week read = calendar.week();
+            Platform.runLater(() -> {
+                week = read;
+                showEvents();
+                if (analysis != null) {
+                    renderSide();
+                }
+            });
+        });
+    }
+
+    private void showEvents() {
+        EconomicCalendar.Week known = week;
+        chart.setEvents(known == null || current == null ? List.of()
+                : EconomicCalendar.forAsset(current, known.events()));
+    }
+
+    /** Puts the remembered look on the chart and the window. */
+    private void applySettings() {
+        ChartType type;
+        try {
+            type = ChartType.valueOf(settings.chartType);
+        } catch (RuntimeException e) {
+            type = ChartType.CANDLES;
+        }
+        chart.setType(type);
+        chart.setLog(settings.log);
+        chart.setVolume(settings.volume);
+        chart.setAverages(settings.averages);
+        chart.setBands(settings.bollinger);
+        chart.setRsi(settings.rsi);
+        chart.setMacd(settings.macd);
+        chart.setLevels(settings.levels);
+        chart.setPatterns(settings.patterns);
+        chart.setEventMarks(settings.events);
+        setDark(settings.dark);
+    }
+
+    /** Switches between TradingView's dark and light looks. */
+    public void setDark(boolean dark) {
+        settings.dark = dark;
+        root.getStyleClass().remove("ms-dark");
+        if (dark) {
+            root.getStyleClass().add("ms-dark");
+        }
+        chart.setTheme(dark ? ChartTheme.DARK : ChartTheme.LIGHT);
+        themeButton.setText(dark ? "☀  Light" : "☾  Dark");
     }
 
     public void dispose() {
@@ -239,10 +314,39 @@ public final class MainView {
                 load(false, false);
             }
         });
-        CheckBox averages = check("Averages", true, chart::setAverages);
-        CheckBox bands = check("Bollinger", false, chart::setBands);
-        CheckBox levels = check("Levels", true, chart::setLevels);
-        CheckBox patterns = check("Patterns", true, chart::setPatterns);
+        for (ChartType t : ChartType.values()) {
+            MenuItem item = new MenuItem(t.label());
+            item.setOnAction(e -> {
+                chart.setType(t);
+                typeButton.setText(t.label());
+                settings.chartType = t.name();
+                settingsStore.save(settings);
+            });
+            typeButton.getItems().add(item);
+        }
+        typeButton.setText(safeType().label());
+        typeButton.setMinWidth(Region.USE_PREF_SIZE);
+        MenuButton indicators = new MenuButton("Indicators");
+        indicators.setMinWidth(Region.USE_PREF_SIZE);
+        indicators.getItems().addAll(
+                option("Volume", settings.volume, on -> { settings.volume = on; chart.setVolume(on); }),
+                option("Moving averages (20, 50, 200)", settings.averages,
+                        on -> { settings.averages = on; chart.setAverages(on); }),
+                option("Bollinger bands (20, 2)", settings.bollinger,
+                        on -> { settings.bollinger = on; chart.setBands(on); }),
+                option("RSI (14)", settings.rsi, on -> { settings.rsi = on; chart.setRsi(on); }),
+                option("MACD (12, 26, 9)", settings.macd, on -> { settings.macd = on; chart.setMacd(on); }),
+                new SeparatorMenuItem(),
+                option("Support and resistance", settings.levels,
+                        on -> { settings.levels = on; chart.setLevels(on); }),
+                option("Patterns", settings.patterns, on -> { settings.patterns = on; chart.setPatterns(on); }),
+                option("Economic events (Forex Factory)", settings.events,
+                        on -> { settings.events = on; chart.setEventMarks(on); }));
+        themeButton.setMinWidth(Region.USE_PREF_SIZE);
+        themeButton.setOnAction(e -> {
+            setDark(!settings.dark);
+            settingsStore.save(settings);
+        });
         Button refresh = new Button("Refresh");
         refresh.setOnAction(e -> {
             if (current != null) {
@@ -251,10 +355,10 @@ public final class MainView {
         });
         refresh.setMinWidth(Region.USE_PREF_SIZE);
         segment.setMinWidth(Region.USE_PREF_SIZE);
-        Label help = new Label("Wheel: zoom · drag: pan · double-click: latest");
+        Label help = new Label("Wheel zooms · drag pans · drag the scales to stretch · double-click resets");
         help.getStyleClass().add("ms-caption");
         help.setMinWidth(0);
-        HBox bar = new HBox(14, segment, averages, bands, levels, patterns, spacer(), help, refresh);
+        HBox bar = new HBox(10, segment, typeButton, indicators, themeButton, spacer(), help, refresh);
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.getStyleClass().add("ms-toolbar");
         return bar;
@@ -343,7 +447,9 @@ public final class MainView {
         if (sameChart) {
             chart.update(result);
         } else {
-            chart.show(result, zone);
+            chart.show(result, series.asset().displaySymbol() + " · " + series.interval().label() + " · "
+                    + series.source().replace(" (unofficial)", ""), zone);
+            showEvents();
         }
         if (series.interval() == Interval.D1) {
             quotes.put(series.asset(), series);
@@ -455,7 +561,13 @@ public final class MainView {
             renderEmptySide();
             return;
         }
-        side.getChildren().setAll(outlookCard(), patternsCard(), recordCard(), levelsCard(), newsCard());
+        side.getChildren().clear();
+        Node alert = calendarAlert();
+        if (alert != null) {
+            side.getChildren().add(alert);
+        }
+        side.getChildren().addAll(outlookCard(), patternsCard(), calendarCard(), recordCard(), levelsCard(),
+                newsCard());
     }
 
     private Node outlookCard() {
@@ -478,6 +590,23 @@ public final class MainView {
             VBox text = new VBox(1, name, wrapped(f.reading(), "ms-factor-reading"));
             HBox.setHgrow(text, Priority.ALWAYS);
             HBox row = new HBox(6, arrow, text);
+            row.setAlignment(Pos.TOP_LEFT);
+            card.getChildren().add(row);
+        }
+        EconomicCalendar.Week known = week;
+        EconomicEvent soon = known == null ? null : EconomicCalendar.nextHighImpact(current, known.events(),
+                Instant.now(), java.time.Duration.ofHours(24));
+        if (soon != null) {
+            Label dot = new Label("●");
+            dot.getStyleClass().addAll("ms-arrow", "ms-secondary");
+            dot.setMinWidth(16);
+            Label name = new Label("Calendar");
+            name.getStyleClass().add("ms-factor-name");
+            VBox text = new VBox(1, name, wrapped("High-impact " + soon.currency() + " " + soon.title() + " "
+                    + Format.until(soon.time(), Instant.now()) + ". Releases often move prices more than any"
+                    + " pattern; not counted, just a heads-up.", "ms-factor-reading"));
+            HBox.setHgrow(text, Priority.ALWAYS);
+            HBox row = new HBox(6, dot, text);
             row.setAlignment(Pos.TOP_LEFT);
             card.getChildren().add(row);
         }
@@ -633,6 +762,124 @@ public final class MainView {
         }
     }
 
+    /** A warning at the top of the panel when a high-impact release is near. */
+    private Node calendarAlert() {
+        EconomicCalendar.Week known = week;
+        if (known == null || current == null) {
+            return null;
+        }
+        Instant now = Instant.now();
+        EconomicEvent next = EconomicCalendar.nextHighImpact(current, known.events(), now,
+                java.time.Duration.ofHours(12));
+        if (next == null) {
+            return null;
+        }
+        Label head = new Label("High-impact " + next.currency() + " release " + Format.until(next.time(), now));
+        head.getStyleClass().add("ms-factor-name");
+        VBox box = new VBox(3, head, wrapped(next.title() + ". Prices often jump around releases like this; chart"
+                + " patterns count for less then.", "ms-factor-reading"));
+        box.getStyleClass().add("ms-alert");
+        return box;
+    }
+
+    private Node calendarCard() {
+        VBox card = card("ECONOMIC CALENDAR · FOREX FACTORY");
+        EconomicCalendar.Week known = week;
+        if (known == null) {
+            card.getChildren().add(wrapped("Reading this week's calendar…", "ms-factor-reading"));
+            return card;
+        }
+        String intro = switch (current.kind()) {
+            case FOREX -> current.base() + " and " + current.quote() + " events this week.";
+            case CRYPTO -> "US events this week: crypto often moves on US data such as inflation, jobs and the Fed.";
+            case STOCK -> "US events this week.";
+        };
+        card.getChildren().add(wrapped(intro, "ms-factor-reading"));
+        Instant now = Instant.now();
+        List<EconomicEvent> mine = EconomicCalendar.forAsset(current, known.events()).stream()
+                .filter(e -> e.impact() == EconomicEvent.Impact.HIGH || e.impact() == EconomicEvent.Impact.MEDIUM)
+                .toList();
+        List<EconomicEvent> upcoming = mine.stream().filter(e -> !e.time().isBefore(now)).limit(8).toList();
+        List<EconomicEvent> past = mine.stream().filter(e -> e.time().isBefore(now)).toList();
+        if (upcoming.isEmpty() && past.isEmpty()) {
+            card.getChildren().add(wrapped("No high- or medium-impact events this week.", "ms-factor-reading"));
+        }
+        for (EconomicEvent e : upcoming) {
+            card.getChildren().add(eventRow(e, now));
+        }
+        if (!past.isEmpty()) {
+            Label earlier = new Label("EARLIER THIS WEEK");
+            earlier.getStyleClass().add("ms-card-title");
+            card.getChildren().add(earlier);
+            for (EconomicEvent e : past.subList(Math.max(0, past.size() - 4), past.size()).reversed()) {
+                card.getChildren().add(eventRow(e, now));
+            }
+        }
+        Button calendarPage = new Button("Calendar ↗");
+        calendarPage.setOnAction(e -> open(EconomicCalendar.CALENDAR_PAGE));
+        Button newsPage = new Button("Forex Factory news ↗");
+        newsPage.setOnAction(e -> open(EconomicCalendar.NEWS_PAGE));
+        card.getChildren().add(new HBox(8, calendarPage, newsPage));
+        card.getChildren().add(wrapped("From Forex Factory's weekly calendar export, read at most once an hour."
+                + " Times are in your time zone; actual figures appear on forexfactory.com after each release."
+                + (known.problem() == null ? "" : " Could not refresh just now: " + known.problem()), "ms-caption"));
+        return card;
+    }
+
+    private Node eventRow(EconomicEvent e, Instant now) {
+        Label impact = new Label(e.impact().label());
+        impact.getStyleClass().addAll("ms-chip", switch (e.impact()) {
+            case HIGH -> "ms-chip-high";
+            case MEDIUM -> "ms-chip-medium";
+            default -> "ms-chip-neutral";
+        });
+        impact.setMinWidth(Region.USE_PREF_SIZE);
+        Label currency = mono(e.currency());
+        Label title = new Label(e.title());
+        title.getStyleClass().add("ms-factor-name");
+        title.setWrapText(true);
+        title.setMinHeight(Region.USE_PREF_SIZE);
+        String figures = (e.forecast().isEmpty() ? "" : "Forecast " + e.forecast())
+                + (e.forecast().isEmpty() || e.previous().isEmpty() ? "" : " · ")
+                + (e.previous().isEmpty() ? "" : "Previous " + e.previous());
+        Label when = new Label(e.time().isBefore(now) ? Format.weekday(e.time(), zone)
+                : Format.until(e.time(), now).replaceFirst("^in ", "in ") + (Format.within(e.time(), now, 24)
+                ? "" : " · " + Format.weekday(e.time(), zone)));
+        when.getStyleClass().add("ms-caption");
+        VBox text = new VBox(1, new HBox(6, currency, title));
+        text.getChildren().add(when);
+        if (!figures.isEmpty()) {
+            Label f = new Label(figures);
+            f.getStyleClass().add("ms-caption");
+            text.getChildren().add(f);
+        }
+        HBox.setHgrow(text, Priority.ALWAYS);
+        HBox row = new HBox(8, impact, text);
+        row.setAlignment(Pos.TOP_LEFT);
+        if (e.time().isBefore(now)) {
+            row.setOpacity(0.65);
+        }
+        return row;
+    }
+
+    private ChartType safeType() {
+        try {
+            return ChartType.valueOf(settings.chartType);
+        } catch (RuntimeException e) {
+            return ChartType.CANDLES;
+        }
+    }
+
+    private CheckMenuItem option(String text, boolean on, java.util.function.Consumer<Boolean> action) {
+        CheckMenuItem item = new CheckMenuItem(text);
+        item.setSelected(on);
+        item.selectedProperty().addListener((o, was, now) -> {
+            action.accept(now);
+            settingsStore.save(settings);
+        });
+        return item;
+    }
+
     // Small parts --------------------------------------------------------------------------------
 
     private void showMessage(String text) {
@@ -744,7 +991,7 @@ public final class MainView {
 
     /** True once a chart and its headlines are on screen. */
     public boolean ready() {
-        return analysis != null && currentNews != null;
+        return analysis != null && currentNews != null && week != null;
     }
 
     public void choose(int watchlistIndex, Interval chosen) {

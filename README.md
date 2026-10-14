@@ -2,14 +2,17 @@
 
 MarketScope is a Windows desktop app for reading crypto, stock and forex charts. For any asset it:
 
-- draws a **candlestick chart** with moving averages (20, 50, 200), Bollinger bands, volume, RSI
-  and MACD, in 1-hour, 4-hour, daily or weekly candles;
+- draws a **TradingView-style chart**: candles, bars, line, area or Heikin-Ashi, with volume under
+  the price, moving averages (20, 50, 200), Bollinger bands, RSI and MACD, in 1-hour, 4-hour, daily
+  or weekly candles, in a light or a dark theme;
 - marks **support and resistance**: prices where recent swings keep turning;
 - finds **classic patterns**: double tops and bottoms, head and shoulders (and inverse),
   breakouts and breakdowns, golden and death crosses, RSI leaving overbought or oversold,
   bullish and bearish engulfing candles;
 - checks **how each pattern actually played out on that asset's own history**, against how often
   price moved that way anyway;
+- shows this week's **economic calendar from Forex Factory** for the currencies that matter
+  (high-impact releases are flagged on the chart, and a warning appears when one is near);
 - reads the **latest headlines** and scores their tone;
 - sums it all up as an **outlook**: leans up, leans down, or no clear lean, with every reason
   shown.
@@ -27,8 +30,8 @@ Live data, 15 October 2026.
 
 | | |
 |---|---|
-| ![Bitcoin, daily](docs/screenshots/bitcoin.png) Bitcoin, daily | ![Apple, daily](docs/screenshots/apple.png) Apple, daily |
-| ![EUR/USD, 4 hours](docs/screenshots/eurusd.png) EUR/USD, 4-hour | ![Solana, hourly](docs/screenshots/solana.png) Solana, hourly |
+| ![Bitcoin, daily](docs/screenshots/bitcoin.png) Bitcoin, daily, light theme | ![EUR/USD, hourly, dark](docs/screenshots/eurusd-dark.png) EUR/USD, hourly, dark theme |
+| ![Apple, daily](docs/screenshots/apple.png) Apple, daily | ![Solana, hourly](docs/screenshots/solana.png) Solana, hourly |
 
 ## How "prediction" works here, honestly
 
@@ -63,6 +66,37 @@ readings agree.
 "plunge", "hack", "lawsuit", with negations such as "fails to rally" flipped). It reads words, not
 meaning, and is shown as a hint.
 
+## The chart
+
+It works like TradingView's:
+
+- **Mouse wheel** zooms around the mouse; **dragging** the chart pans it (dragging it up or down too
+  switches the price scale to manual). **Drag the price scale** to stretch it, **drag the time
+  scale** to zoom. A **double-click** on the price scale returns to automatic scaling, anywhere
+  else to the latest candles. **LOG** and **AUTO** under the price scale switch a logarithmic scale
+  and automatic scaling; the **»** button jumps back to the latest candle.
+- The legend at the top left reads out the candle under the crosshair (open, high, low, close,
+  change, volume) and the indicator values; the crosshair puts its price and time on the scales.
+- **Chart type**: candles, bars, line, area or Heikin-Ashi (average bars; the analysis always uses
+  the real candles). **Indicators**: volume, moving averages, Bollinger bands, RSI, MACD, support
+  and resistance, patterns and economic events, each switched on or off.
+- **Dark / Light** switches TradingView's dark and light looks. The chart type, indicators, theme
+  and log scale are remembered in `settings.json` next to the watchlist.
+
+## Economic calendar (Forex Factory)
+
+The calendar comes from Forex Factory's own weekly export (`nfs.faireconomy.media`), read at most
+once an hour and kept on disk, so MarketScope does not hammer it. For a currency pair it shows both
+currencies' events; for stocks and crypto the US ones (crypto often moves on US inflation, jobs and
+Fed data). High-impact releases get a flag on the chart's time axis, also ahead of the last candle,
+with a dashed line; hover a flag for the forecast and the previous figure. The side panel lists the
+week's high- and medium-impact events, and a warning appears at the top when a high-impact release
+is due within 12 hours. The outlook mentions one due within a day: releases often move prices more
+than any pattern.
+
+Forex Factory has no news feed, only its web page, and MarketScope does not scrape it; the
+**Forex Factory news** button opens the page in your browser.
+
 ## Where the data comes from
 
 All free, without accounts or keys. MarketScope says who it is (`MarketScope/0.1`) and only reads.
@@ -72,6 +106,7 @@ All free, without accounts or keys. MarketScope says who it is (`MarketScope/0.1
 | Crypto | Binance public market data (Yahoo Finance as a fallback) | Yahoo Finance per coin, Cointelegraph, CoinDesk (headlines that name the coin) |
 | Stocks and ETFs | Yahoo Finance chart data | Yahoo Finance per ticker |
 | Forex | Yahoo Finance chart data (ECB reference rates as a fallback for daily and weekly) | Yahoo Finance per pair |
+| Economic calendar | Forex Factory's weekly calendar export | |
 
 Yahoo Finance's chart endpoint is public but **unofficial**: fine for personal use, and it can
 change without notice. Its 4-hour candles are built from hourly ones. ECB rates are one value per
@@ -84,12 +119,11 @@ refreshes every minute.
   `AAPL`, `EUR/USD`… The kind is guessed (a pair of currency codes is forex, a known coin or a
   `…USDT` pair is crypto, anything else a stock); choose it in the list above to override.
   Right-click to remove. The list is saved in `%USERPROFILE%\.marketscope\watchlist.json`.
-- **Chart**: pick 1H, 4H, 1D or 1W; switch averages, Bollinger bands, levels and patterns on or
-  off. Mouse wheel zooms, dragging pans, double-click returns to the latest candles, and the line at
-  the top reads out the candle under the mouse. Recent patterns are drawn solid with a marker and
-  a label; older shapes are drawn faintly.
-- **Right panel**: the outlook with its reasons, the patterns in play, every pattern's track record
-  on this chart, support and resistance, and the headlines (click one to open it).
+- **Chart**: pick 1H, 4H, 1D or 1W, the chart type and the indicators (see *The chart* above).
+  Recent patterns are drawn solid with a marker and a label; older shapes are drawn faintly.
+- **Right panel**: the outlook with its reasons, the patterns in play, the economic calendar, every
+  pattern's track record on this chart, support and resistance, and the headlines (click one to
+  open it).
 
 ## Run it
 
